@@ -1,5 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.zema_multimedia">
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
    <application
         android:label="zema_multimedia"
         android:name="${applicationName}"

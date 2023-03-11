@@ -26,7 +26,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
     final response = await http.get(Uri.parse(url),headers: header);
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
-      print(result['results']);
+      //print(result['results']);
       setState(() {
         NewAlbumsList = result['results'];
       });
@@ -80,6 +80,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
                         ArtistName: NewAlbumsList[index]['album_name'], 
                         TrackName: NewAlbumsList[index]['artist_name'],
                         ImageURL: NewAlbumsList[index]['album_coverImage'],
+                        TrackID: NewAlbumsList[index]['id'],
                       ),
                     ),
                   );

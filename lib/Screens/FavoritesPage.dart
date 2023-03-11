@@ -25,7 +25,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
     final response = await http.get(Uri.parse(url),headers: header);
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
-      print(result['results']);
+      print(result);
       setState(() {
         FavoritesList = result['results'];
       });
@@ -39,11 +39,23 @@ class _FavoritesPageState extends State<FavoritesPage> {
   }
 }
 
+Future<dynamic> addToFavoritesAPI(String userFUI, String trackID) async {
+  try {
+      var data = '{\n  "user_FUI": "${userFUI}",\n  "track_id": ${trackID}\n}';
+      var url = Uri.parse('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/favourites');
+      var res = await http.post(url, headers: header, body: data);
+      if (res.statusCode != 200) throw Exception('http.post error: statusCode= ${res.statusCode}');
+  } catch (e) {
+    print('Error fetching JSON from: $e');
+    return null;
+  }
+}
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getFavoritesListAPI('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/favourites?page=1&page_size=5');
+    getFavoritesListAPI('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/favourites');
   }
 
 
@@ -58,7 +70,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           Text("Favorites List", style: header18,),
           const SizedBox(height: 20,),
           Container(
-            height: 200,
+            height: getScreenHeightOfContext(context),
             child: FavoritesList.isEmpty ? CircularLoading() : 
             ListView.builder(
               physics: BouncingScrollPhysics(),
@@ -69,8 +81,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 return Padding(
                   padding: const EdgeInsets.fromLTRB(0, 0, 0, 8),
                   child: FavoritesListCard(
-                    ArtistName: "ArtistName", 
-                    TrackTitle: "TrackTitle"
+                    ArtistName: FavoritesList[index]['artist_name'], 
+                    TrackTitle: FavoritesList[index]['track_name'],
+                    ImageURL: FavoritesList[index]['track_coverImage'],
+                    TrackID: FavoritesList[index]['id'],
                   ),
                 );
               },
