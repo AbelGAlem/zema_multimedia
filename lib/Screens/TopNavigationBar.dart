@@ -21,7 +21,7 @@ class _TopNavigationBarState extends State<TopNavigationBar> {
     return Scaffold(
       body: SafeArea(
         child: Container(
-          //height: getScreenHeightOfContext(context),
+          height: getScreenHeightOfContext(context),
         color: BackgroundColor,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -70,13 +70,19 @@ class _TopNavigationBarState extends State<TopNavigationBar> {
           const SizedBox(height: 16,),
         
           // Tab Main content
-          if(pageNumber == 0)...[
-            ExplorePage()
-          ]else if(pageNumber == 1)...[
-            AlbumsPage()
-          ]else if(pageNumber == 2)...[
-            FavoritesPage()
-          ]
+          Expanded(
+            child: ListView(
+              children: [
+                if(pageNumber == 0)...[
+                  ExplorePage()
+                ]else if(pageNumber == 1)...[
+                  AlbumsPage()
+                ]else if(pageNumber == 2)...[
+                  FavoritesPage()
+                ]
+              ],
+            )
+            )
           
         ],
           )

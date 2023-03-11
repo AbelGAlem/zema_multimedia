@@ -46,12 +46,13 @@ class _ExplorePageState extends State<ExplorePage> {
   }
 }
 
+// get new music
 Future<dynamic> getNewMusicAPI(String url) async {
   try {
     final response = await http.get(Uri.parse(url),headers: header);
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
-      //print(result['results']);
+      print(result['results']);
       setState(() {
         NewMusicList = result['results'];
       });
@@ -65,6 +66,7 @@ Future<dynamic> getNewMusicAPI(String url) async {
   }
 }
 
+// get new artist
 Future<dynamic> getArtistsAPI(String url) async {
   try {
     final response = await http.get(Uri.parse(url),headers: header);
@@ -84,8 +86,64 @@ Future<dynamic> getArtistsAPI(String url) async {
   }
 }
 
+// play and pause button
+void showPlayDialog(BuildContext context, String TrackName, String ArtistName, String ImageURL, String AudioURL) {
+  showDialog(
+    
+    context: context,
+    builder: (BuildContext context) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return  AlertDialog(
+            actions: [
+              Column(
+                children: [                
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: Image.network(
+                      ImageURL,
+                      height: getScreenWidthOfContext(context) * 0.9,
+                      width: getScreenWidthOfContext(context) * 0.7,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(height: 12,),
+                  Text(TrackName,style: header18.copyWith(fontSize: 22),),
+                  const SizedBox(height: 6,),
+                  Text(ArtistName, style: header12.copyWith(fontWeight: FontWeight.w500),),
+                  const SizedBox(height: 12,),
+                  IconButton(
+                    icon: play ? Icon(Icons.pause,size: 42,) : Icon(Icons.play_arrow,size: 42,),
+                    onPressed: () {
+                      if(play == false){
+                        setState(() {
+                          play = true;
+                          _playAudio(AudioURL);
+                        });
+                      }else{
+                        setState(() {
+                          play = false;
+                          _pauseAudio();
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 12,),
+                ],
+              ),
+            ],
+          );
+        },);
+    },
+  );
+}
+
   Future<void> _playAudio(String audioURL) async {
     await _audioPlayer.play(UrlSource(audioURL));
+  }
+
+    Future<void> _pauseAudio() async {
+    await _audioPlayer.pause();
   }
 
   @override
@@ -101,115 +159,102 @@ Future<dynamic> getArtistsAPI(String url) async {
   @override
   Widget build(BuildContext context) {
     return Container(
-      //height: getScreenHeightOfContext(context),
       padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
-      child: Expanded(
-        child: Stack(
-          children: [
-            Expanded(
-              child: ListView(
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Text("New Albums", style: header18,),
-                      const SizedBox(height: 16,),
-                      // New Albums
-                      Container(
-                        height: 200,
-                        child: NewAlbumsList.isEmpty ? CircularLoading() : 
-                        ListView.builder(
-                          physics: BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: NewAlbumsList.length,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-                              child: NewAlbumCard(
-                                AlbumName: NewAlbumsList[index]['album_name'], 
-                                ArtistName: NewAlbumsList[index]['artist_name'], 
-                                ImageURL: NewAlbumsList[index]['album_coverImage'],
-                                
-                              ),
-                            );
-                          },
-                        )
-                      ),
-      
-                      // New Music
-                      const SizedBox(height: 24,),
-                      Text("New Music", style: header18,),
-                      const SizedBox(height: 16,),
-                      Container(
-                        height: 200,
-                        child: NewAlbumsList.isEmpty ? CircularLoading() : 
-                        ListView.builder(
-                          physics: BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: NewMusicList.length,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) {
-                            return InkWell(
-                              onTap: (){
-                                print(NewMusicList[index]['track_audioFile']);
-                                _playAudio(NewMusicList[index]['track_audioFile']);
-                              },
-                              child: Padding(
-                                padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-                                child: NewMusicCard(
-                                  ArtistName: NewMusicList[index]['artist_name'], 
-                                  TrackName: NewMusicList[index]['track_name'], 
-                                  ImageURL: NewMusicList[index]['track_coverImage'],
-                                  TrackID:  NewMusicList[index]['id'],
-                                  ),
-                              ),
-                            );
-                          },
-                        )
-                      ),
-      
-                      // New Artists
-                      const SizedBox(height: 24,),
-                      Text("New Artists", style: header18,),
-                      const SizedBox(height: 16,),
-                      Container(
-                        height: 200,
-                        child: NewAlbumsList.isEmpty ? CircularLoading() : 
-                        ListView.builder(
-                          physics: BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: NewArtistList.length,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-                              child: NewArtistCard(
-                                ArtistName: NewArtistList[index]['artist_name'], 
-                                ImageURL: NewArtistList[index]['artist_profileImage']),
-                            );
-                          },
-                        )
-                      ),
-                      const SizedBox(height: 136,),
-                      
-                    ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Text("New Albums", style: header18,),
+          const SizedBox(height: 16,),
+          // New Albums
+          Container(
+            height: 200,
+            child: NewAlbumsList.isEmpty ? CircularLoading() : 
+            ListView.builder(
+              physics: BouncingScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: NewAlbumsList.length,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                  child: NewAlbumCard(
+                    AlbumName: NewAlbumsList[index]['album_name'], 
+                    ArtistName: NewAlbumsList[index]['artist_name'], 
+                    ImageURL: NewAlbumsList[index]['album_coverImage'],
+                    
                   ),
-                ],
-              )
-            ),
-            Positioned(
-              bottom: 0,
-              child: Container(
-                height: 100,
-                width: getScreenWidthOfContext(context),
-                color: Color.fromARGB(255, 0, 0, 0),
-              )
+                );
+              },
             )
-          ],
-        ),
-      )
+          ),
+
+          // New Music
+          const SizedBox(height: 24,),
+          Text("New Music", style: header18,),
+          const SizedBox(height: 16,),
+          Container(
+            height: 200,
+            child: NewAlbumsList.isEmpty ? CircularLoading() : 
+            ListView.builder(
+              physics: BouncingScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: NewMusicList.length,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                return InkWell(
+                  onTap: (){
+                    print(NewMusicList[index]['track_audioFile']);
+                    showPlayDialog(
+                      context,
+                      NewMusicList[index]['track_name'],
+                      NewMusicList[index]['artist_name'],
+                      NewMusicList[index]['track_coverImage'],
+                      NewMusicList[index]['track_audioFile'] 
+                    );
+                    //_playAudio(NewMusicList[index]['track_audioFile']);
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                    child: NewMusicCard(
+                      ArtistName: NewMusicList[index]['artist_name'], 
+                      TrackName: NewMusicList[index]['track_name'], 
+                      ImageURL: NewMusicList[index]['track_coverImage'],
+                      TrackID:  NewMusicList[index]['id'],
+                      ),
+                  ),
+                );
+              },
+            )
+          ),
+
+          // New Artists
+          const SizedBox(height: 24,),
+          Text("New Artists", style: header18,),
+          const SizedBox(height: 16,),
+          Container(
+            height: 200,
+            child: NewAlbumsList.isEmpty ? CircularLoading() : 
+            ListView.builder(
+              physics: BouncingScrollPhysics(),
+              shrinkWrap: true,
+              itemCount: NewArtistList.length,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                  child: NewArtistCard(
+                    ArtistName: NewArtistList[index]['artist_name'], 
+                    ImageURL: NewArtistList[index]['artist_profileImage']),
+                );
+              },
+            )
+          ),
+          const SizedBox(height: 16,),
+          
+        ],
+      ),
     );
   }
 }
+
