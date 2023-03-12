@@ -14,8 +14,6 @@ class NewAlbumCard extends StatefulWidget {
   State<NewAlbumCard> createState() => _NewAlbumCardState();
 }
 
-//--------------------------------------------------------------------------------------------------
-
 class _NewAlbumCardState extends State<NewAlbumCard> {
   @override
   Widget build(BuildContext context) {
@@ -52,6 +50,8 @@ class _NewAlbumCardState extends State<NewAlbumCard> {
     );
   }
 }
+
+//--------------------------------------------------------------------------------------------------
 
 class AlbumCard extends StatefulWidget {
   String TrackName;
@@ -121,11 +121,6 @@ class _NewMusicCardState extends State<NewMusicCard> {
     'Content-Type': 'application/json',
     'X-CSRFToken': 'Lz9hzyfR5JY1hI7qLlIkEr8zDYvUVVDizbKfhxwtZG789J5SNVEQH4oplpkwxTDl',
   };
-    var headers = {
-    'accept': 'application/json',
-    'X-CSRFToken': 'jIgxc8zID18s8GDz8VGYQGHzKzApGF2QXFTfN52nK6ft8F3NBO0Xq1fukLdvpQx1',
-  };
-
 
   Future<dynamic> addToFavoritesAPI(String userFUI, String trackID) async {
     try {
@@ -142,9 +137,9 @@ class _NewMusicCardState extends State<NewMusicCard> {
   //
   Future<dynamic> deleteToFavoritesAPI(String trackID) async {
     try {
-        var url = Uri.parse('https://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/favourites/6');
-        print('${url.data} ${url}');
-        var res = await http.delete(url, headers: headers);
+        var url = Uri.parse('https://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/favourites/${trackID}');
+        //print('${url.data} ${url}');
+        var res = await http.delete(url, headers: header);
         if (res.statusCode != 200) throw Exception('http.posts error: statusCode= ${res.statusCode}');
     } catch (e) {
       print('Error fetching JSON froms: $e');

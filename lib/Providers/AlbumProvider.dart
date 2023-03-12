@@ -3,14 +3,9 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:zema_multimedia/Shared/Data.dart';
 
 class AlbumProvider extends ChangeNotifier{
-
-    var header = {
-      'accept': 'application/json',
-      'X-CSRFToken': 'jIgxc8zID18s8GDz8VGYQGHzKzApGF2QXFTfN52nK6ft8F3NBO0Xq1fukLdvpQx1',
-    };
-
     // Get New Albums
     Future<dynamic> getNewAlbumAPI() async {
       try {

@@ -15,10 +15,6 @@ class AlbumsPage extends StatefulWidget {
 }
 
 class _AlbumsPageState extends State<AlbumsPage> {
-  var header = {
-    'accept': 'application/json',
-    'X-CSRFToken': 'Lz9hzyfR5JY1hI7qLlIkEr8zDYvUVVDizbKfhxwtZG789J5SNVEQH4oplpkwxTDl',
-  };
 
   @override
   Widget build(BuildContext context) {
