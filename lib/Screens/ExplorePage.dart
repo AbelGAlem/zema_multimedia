@@ -26,6 +26,8 @@ class _ExplorePageState extends State<ExplorePage> {
   List NewAlbumsList = [];
   List NewMusicList = [];
   List NewArtistList = [];
+  List FavoritesList = [];
+  List FavoritesTrackIDList = [];
 
   // Get New Albums
   Future<dynamic> getNewAlbumAPI(String url) async {
@@ -33,6 +35,7 @@ class _ExplorePageState extends State<ExplorePage> {
     final response = await http.get(Uri.parse(url),headers: header);
     if (response.statusCode == 200) {
       final result = json.decode(response.body);
+      
       setState(() {
         NewAlbumsList = result['results'];
       });
@@ -86,6 +89,31 @@ Future<dynamic> getArtistsAPI(String url) async {
   }
 }
 
+// get favorites list to show favorited tracks
+Future<dynamic> getFavoritesListAPI(String url) async {
+  try {
+    final response = await http.get(Uri.parse(url),headers: header);
+    if (response.statusCode == 200) {
+      final result = json.decode(response.body);
+      //print(result['results']);
+      setState(() {
+        FavoritesList = result['results'];
+      });
+      for(dynamic each in FavoritesList){
+        FavoritesTrackIDList.add(each['id']);
+      }
+      //print(FavoritesTrackIDList);
+
+    } else {
+      print('Error fetching JSON from $url: ${response.reasonPhrase}');
+      return null;
+    }
+  } catch (e) {
+    print('Error fetching JSON from $url: $e');
+    return null;
+  }
+}
+
 // play and pause button
 void showPlayDialog(BuildContext context, String TrackName, String ArtistName, String ImageURL, String AudioURL) {
   showDialog(
@@ -97,6 +125,8 @@ void showPlayDialog(BuildContext context, String TrackName, String ArtistName, S
           return  AlertDialog(
             actions: [
               Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [                
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
@@ -112,21 +142,32 @@ void showPlayDialog(BuildContext context, String TrackName, String ArtistName, S
                   const SizedBox(height: 6,),
                   Text(ArtistName, style: header12.copyWith(fontWeight: FontWeight.w500),),
                   const SizedBox(height: 12,),
-                  IconButton(
-                    icon: play ? Icon(Icons.pause,size: 42,) : Icon(Icons.play_arrow,size: 42,),
-                    onPressed: () {
-                      if(play == false){
-                        setState(() {
-                          play = true;
-                          _playAudio(AudioURL);
-                        });
-                      }else{
-                        setState(() {
-                          play = false;
-                          _pauseAudio();
-                        });
-                      }
-                    },
+                  Container(
+                    padding: EdgeInsets.fromLTRB(24, 0, 24, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(Icons.skip_previous, size: 32,),
+                        IconButton(
+                          icon: play ? Icon(Icons.pause_circle,size: 42,) : Icon(Icons.play_circle,size: 42,),
+                          onPressed: () {
+                            if(play == false){
+                              setState(() {
+                                play = true;
+                                _playAudio(AudioURL);
+                              });
+                            }else{
+                              setState(() {
+                                play = false;
+                                _pauseAudio();
+                              });
+                            }
+                          },
+                        ),
+                        Icon(Icons.skip_next,size: 32,),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 12,),
                 ],
@@ -138,11 +179,11 @@ void showPlayDialog(BuildContext context, String TrackName, String ArtistName, S
   );
 }
 
-  Future<void> _playAudio(String audioURL) async {
+Future<void> _playAudio(String audioURL) async {
     await _audioPlayer.play(UrlSource(audioURL));
   }
 
-    Future<void> _pauseAudio() async {
+Future<void> _pauseAudio() async {
     await _audioPlayer.pause();
   }
 
@@ -153,6 +194,7 @@ void showPlayDialog(BuildContext context, String TrackName, String ArtistName, S
     getNewAlbumAPI('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/albums');
     getNewMusicAPI('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/tracks?page=1&page_size=7');
     getArtistsAPI('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/artists?page=2&page_size=5');
+    getFavoritesListAPI('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/favourites');
   }
 
 
@@ -166,7 +208,7 @@ void showPlayDialog(BuildContext context, String TrackName, String ArtistName, S
         children: [
           Text("New Albums", style: header18,),
           const SizedBox(height: 16,),
-          // New Albums
+          // New Albums------------------------------------------------------------------------
           Container(
             height: 200,
             child: NewAlbumsList.isEmpty ? CircularLoading() : 
@@ -189,7 +231,7 @@ void showPlayDialog(BuildContext context, String TrackName, String ArtistName, S
             )
           ),
 
-          // New Music
+          // New Music -----------------------------------------------------------------------------
           const SizedBox(height: 24,),
           Text("New Music", style: header18,),
           const SizedBox(height: 16,),
@@ -202,9 +244,11 @@ void showPlayDialog(BuildContext context, String TrackName, String ArtistName, S
               itemCount: NewMusicList.length,
               scrollDirection: Axis.horizontal,
               itemBuilder: (context, index) {
+                bool isFavorited = FavoritesTrackIDList.contains(NewMusicList[index]['id']);
+                print(NewMusicList[index]['id']);
                 return InkWell(
                   onTap: (){
-                    print(NewMusicList[index]['track_audioFile']);
+                    //print(NewMusicList[index]['track_audioFile']);
                     showPlayDialog(
                       context,
                       NewMusicList[index]['track_name'],
@@ -221,14 +265,15 @@ void showPlayDialog(BuildContext context, String TrackName, String ArtistName, S
                       TrackName: NewMusicList[index]['track_name'], 
                       ImageURL: NewMusicList[index]['track_coverImage'],
                       TrackID:  NewMusicList[index]['id'],
-                      ),
+                      isFavorited: isFavorited,
+                    ),
                   ),
                 );
               },
             )
           ),
 
-          // New Artists
+          // New Artists ------------------------------------------------------------------------------
           const SizedBox(height: 24,),
           Text("New Artists", style: header18,),
           const SizedBox(height: 16,),

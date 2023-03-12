@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:zema_multimedia/Screens/SplashScreenPage.dart';
 import 'package:zema_multimedia/Screens/TopNavigationBar.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const splashScreenPage());
 }
 
 class MyApp extends StatelessWidget {

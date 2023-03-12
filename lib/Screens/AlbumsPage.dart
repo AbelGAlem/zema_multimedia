@@ -40,6 +40,8 @@ class _AlbumsPageState extends State<AlbumsPage> {
   }
 }
 
+  
+
   @override
   void initState() {
     // TODO: implement initState
@@ -81,6 +83,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
                         TrackName: NewAlbumsList[index]['artist_name'],
                         ImageURL: NewAlbumsList[index]['album_coverImage'],
                         TrackID: NewAlbumsList[index]['id'],
+                        isFavorited: true,
                       ),
                     ),
                   );

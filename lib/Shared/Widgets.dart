@@ -56,8 +56,9 @@ class NewMusicCard extends StatefulWidget {
   String ArtistName;
   String ImageURL;
   int TrackID;
+  bool isFavorited;
 
-  NewMusicCard({super.key, required this.ArtistName, required this.TrackName, required this.ImageURL,required this.TrackID});
+  NewMusicCard({super.key, required this.ArtistName, required this.TrackName, required this.ImageURL,required this.TrackID,required this.isFavorited});
 
   @override
   State<NewMusicCard> createState() => _NewMusicCardState();
@@ -74,7 +75,6 @@ class _NewMusicCardState extends State<NewMusicCard> {
     'X-CSRFToken': 'jIgxc8zID18s8GDz8VGYQGHzKzApGF2QXFTfN52nK6ft8F3NBO0Xq1fukLdvpQx1',
   };
 
-  bool isFavorite = false;
 
   Future<dynamic> addToFavoritesAPI(String userFUI, String trackID) async {
     try {
@@ -133,7 +133,7 @@ class _NewMusicCardState extends State<NewMusicCard> {
                 ),
                 InkWell(
                   onTap: () {
-                    if(isFavorite == true){
+                    if(widget.isFavorited  == true){
                       /*int num = widget.TrackID - 1;
                       deleteToFavoritesAPI(widget.TrackID.toString());
                       setState(() {
@@ -142,11 +142,11 @@ class _NewMusicCardState extends State<NewMusicCard> {
                     }else{
                       addToFavoritesAPI("AbelAlem", widget.TrackID.toString());
                       setState(() {
-                        isFavorite = true;
+                        widget.isFavorited = true;
                       });
                     }
                   },
-                  child: isFavorite ? 
+                  child: widget.isFavorited ? 
                     InkWell(child: Icon(Icons.favorite, color: Colors.red,)) : 
                     InkWell(child: Icon(Icons.favorite_border_outlined)) 
                 )
