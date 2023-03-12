@@ -14,6 +14,8 @@ class NewAlbumCard extends StatefulWidget {
   State<NewAlbumCard> createState() => _NewAlbumCardState();
 }
 
+//--------------------------------------------------------------------------------------------------
+
 class _NewAlbumCardState extends State<NewAlbumCard> {
   @override
   Widget build(BuildContext context) {
@@ -50,6 +52,55 @@ class _NewAlbumCardState extends State<NewAlbumCard> {
     );
   }
 }
+
+class AlbumCard extends StatefulWidget {
+  String TrackName;
+  String ArtistName;
+  String ImageURL;
+  //int TrackID;
+
+  AlbumCard({super.key, required this.ArtistName, required this.TrackName, required this.ImageURL,});
+
+  @override
+  State<AlbumCard> createState() => _AlbumCardState();
+}
+
+class _AlbumCardState extends State<AlbumCard> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: getScreenWidthOfContext(context) * 0.3,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            decoration: cardRadiusShadow,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(widget.ImageURL,width: getScreenWidthOfContext(context) * 0.3,
+                        height: getScreenWidthOfContext(context) * 0.29,fit: BoxFit.cover,),
+            )
+          ),
+          const SizedBox(height: 8,),
+          Container(
+            width: getScreenWidthOfContext(context) * 0.3,
+            padding: const EdgeInsets.fromLTRB(2, 0, 2, 0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(widget.TrackName, style: header10,),
+                const SizedBox(height: 4,),
+                Text(widget.ArtistName,style: header10.copyWith(fontSize: 8),)
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+//-------------------------------------------- NewMusicCard -----------------------------------------------------
 
 class NewMusicCard extends StatefulWidget {
   String TrackName;
@@ -88,7 +139,7 @@ class _NewMusicCardState extends State<NewMusicCard> {
       return null;
     }
   }
-
+  //
   Future<dynamic> deleteToFavoritesAPI(String trackID) async {
     try {
         var url = Uri.parse('https://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/favourites/6');
@@ -159,6 +210,7 @@ class _NewMusicCardState extends State<NewMusicCard> {
   }
 }
 
+//-------------------------------------------- NewArtistsCard -----------------------------------------------------
 class NewArtistCard extends StatefulWidget {
   String ArtistName;
   String ImageURL;
@@ -192,6 +244,8 @@ class _NewArtistCardState extends State<NewArtistCard> {
     );
   }
 }
+
+//-------------------------------------------- FavoritesCard -----------------------------------------------------
 
 class FavoritesListCard extends StatefulWidget {
   String TrackTitle;

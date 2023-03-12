@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:audioplayers/audioplayers.dart';
 
 import 'package:flutter/material.dart';
-import 'package:zema_multimedia/Models/AlbumModel.dart';
+import 'package:zema_multimedia/Providers/AlbumProvider.dart';
+import 'package:zema_multimedia/Providers/ArtistProvider.dart';
+import 'package:zema_multimedia/Providers/TrackProvider.dart';
 import 'package:zema_multimedia/Shared/Themes.dart';
 import 'package:zema_multimedia/Shared/Widgets.dart';
 import 'package:http/http.dart' as http;
@@ -23,73 +25,10 @@ class _ExplorePageState extends State<ExplorePage> {
     'X-CSRFToken': 'jIgxc8zID18s8GDz8VGYQGHzKzApGF2QXFTfN52nK6ft8F3NBO0Xq1fukLdvpQx1',
   };
 
-  List NewAlbumsList = [];
-  List NewMusicList = [];
-  List NewArtistList = [];
   List FavoritesList = [];
   List FavoritesTrackIDList = [];
 
-  // Get New Albums
-  Future<dynamic> getNewAlbumAPI(String url) async {
-  try {
-    final response = await http.get(Uri.parse(url),headers: header);
-    if (response.statusCode == 200) {
-      final result = json.decode(response.body);
-      
-      setState(() {
-        NewAlbumsList = result['results'];
-      });
-    } else {
-      print('Error fetching JSON fro $url: ${response.reasonPhrase} ---------------------------- ${response.statusCode}');
-      return null;
-    }
-  } catch (e) {
-    print('Error fetching JSON from $url: $e iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii');
-    return null;
-  }
-}
-
-// get new music
-Future<dynamic> getNewMusicAPI(String url) async {
-  try {
-    final response = await http.get(Uri.parse(url),headers: header);
-    if (response.statusCode == 200) {
-      final result = json.decode(response.body);
-      print(result['results']);
-      setState(() {
-        NewMusicList = result['results'];
-      });
-    } else {
-      print('Error fetching JSON from $url: ${response.reasonPhrase}');
-      return null;
-    }
-  } catch (e) {
-    print('Error fetching JSON from the $url: $e');
-    return null;
-  }
-}
-
-// get new artist
-Future<dynamic> getArtistsAPI(String url) async {
-  try {
-    final response = await http.get(Uri.parse(url),headers: header);
-    if (response.statusCode == 200) {
-      final result = json.decode(response.body);
-      //print(result['results']);
-      setState(() {
-        NewArtistList = result['results'];
-      });
-    } else {
-      print('Error fetching JSON from $url: ${response.reasonPhrase}');
-      return null;
-    }
-  } catch (e) {
-    print('Error fetching JSON from $url: $e');
-    return null;
-  }
-}
-
-// get favorites list to show favorited tracks
+// get favorites list to show favorited tracks in explore page
 Future<dynamic> getFavoritesListAPI(String url) async {
   try {
     final response = await http.get(Uri.parse(url),headers: header);
@@ -114,10 +53,9 @@ Future<dynamic> getFavoritesListAPI(String url) async {
   }
 }
 
-// play and pause button
+// play and pause function and dialog
 void showPlayDialog(BuildContext context, String TrackName, String ArtistName, String ImageURL, String AudioURL) {
-  showDialog(
-    
+  showDialog(  
     context: context,
     builder: (BuildContext context) {
       return StatefulBuilder(
@@ -191,15 +129,13 @@ Future<void> _pauseAudio() async {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getNewAlbumAPI('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/albums');
-    getNewMusicAPI('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/tracks?page=1&page_size=7');
-    getArtistsAPI('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/artists?page=2&page_size=5');
     getFavoritesListAPI('http://exam.calmgrass-743c6f7f.francecentral.azurecontainerapps.io/favourites');
   }
 
 
   @override
   Widget build(BuildContext context) {
+
     return Container(
       padding: EdgeInsets.fromLTRB(16, 0, 16, 0),
       child: Column(
@@ -209,91 +145,122 @@ Future<void> _pauseAudio() async {
           Text("New Albums", style: header18,),
           const SizedBox(height: 16,),
           // New Albums------------------------------------------------------------------------
-          Container(
-            height: 200,
-            child: NewAlbumsList.isEmpty ? CircularLoading() : 
-            ListView.builder(
-              physics: BouncingScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: NewAlbumsList.length,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-                  child: NewAlbumCard(
-                    AlbumName: NewAlbumsList[index]['album_name'], 
-                    ArtistName: NewAlbumsList[index]['artist_name'], 
-                    ImageURL: NewAlbumsList[index]['album_coverImage'],
-                    
-                  ),
+          FutureBuilder(
+            future: AlbumProvider().getNewAlbumAPI(),
+            builder: (context, snapshot) {              
+              if(snapshot.connectionState == ConnectionState.waiting){
+                return Container(height: 200,child: const CircularLoading());
+              }else if(snapshot.hasData){
+                final NewAlbumList = snapshot.data;
+                return Container(
+                  height: 200,
+                  child:  
+                  ListView.builder(
+                    physics: BouncingScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: NewAlbumList.length,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                        child: NewAlbumCard(
+                          AlbumName: NewAlbumList[index]['album_name'], 
+                          ArtistName: NewAlbumList[index]['artist_name'], 
+                          ImageURL: NewAlbumList[index]['album_coverImage'],                          
+                        ),
+                      );
+                    },
+                  )
                 );
-              },
-            )
+              }
+              return Container();
+            },
           ),
 
           // New Music -----------------------------------------------------------------------------
           const SizedBox(height: 24,),
           Text("New Music", style: header18,),
           const SizedBox(height: 16,),
-          Container(
-            height: 200,
-            child: NewAlbumsList.isEmpty ? CircularLoading() : 
-            ListView.builder(
-              physics: BouncingScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: NewMusicList.length,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) {
-                bool isFavorited = FavoritesTrackIDList.contains(NewMusicList[index]['id']);
-                print(NewMusicList[index]['id']);
-                return InkWell(
-                  onTap: (){
-                    //print(NewMusicList[index]['track_audioFile']);
-                    showPlayDialog(
-                      context,
-                      NewMusicList[index]['track_name'],
-                      NewMusicList[index]['artist_name'],
-                      NewMusicList[index]['track_coverImage'],
-                      NewMusicList[index]['track_audioFile'] 
-                    );
-                    //_playAudio(NewMusicList[index]['track_audioFile']);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-                    child: NewMusicCard(
-                      ArtistName: NewMusicList[index]['artist_name'], 
-                      TrackName: NewMusicList[index]['track_name'], 
-                      ImageURL: NewMusicList[index]['track_coverImage'],
-                      TrackID:  NewMusicList[index]['id'],
-                      isFavorited: isFavorited,
-                    ),
-                  ),
+          FutureBuilder(
+            future: MusicProvider().getNewMusicAPI(),
+            builder: (context, snapshot) {
+              if(snapshot.connectionState == ConnectionState.waiting){
+                return Container(height: 200,child: CircularLoading());
+              }else{
+                List newMusicList = snapshot.data;
+                return Container(
+                  height: 200,
+                  child:
+                  ListView.builder(
+                    physics: BouncingScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: newMusicList.length,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      bool isFavorited = FavoritesTrackIDList.contains(newMusicList[index]['id']);
+                      //print(NewMusicList[index]['id']);
+                      return InkWell(
+                        onTap: (){
+                          //print(NewMusicList[index]['track_audioFile']);
+                          showPlayDialog(
+                            context,
+                            newMusicList[index]['track_name'],
+                            newMusicList[index]['artist_name'],
+                            newMusicList[index]['track_coverImage'],
+                            newMusicList[index]['track_audioFile'] 
+                          );
+                          //_playAudio(NewMusicList[index]['track_audioFile']);
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                          child: NewMusicCard(
+                            ArtistName: newMusicList[index]['artist_name'], 
+                            TrackName: newMusicList[index]['track_name'], 
+                            ImageURL: newMusicList[index]['track_coverImage'],
+                            TrackID:  newMusicList[index]['id'],
+                            isFavorited: isFavorited,
+                          ),
+                        ),
+                      );
+                    },
+                  )
                 );
-              },
-            )
+              }
+            },
           ),
 
           // New Artists ------------------------------------------------------------------------------
           const SizedBox(height: 24,),
           Text("New Artists", style: header18,),
           const SizedBox(height: 16,),
-          Container(
-            height: 200,
-            child: NewAlbumsList.isEmpty ? CircularLoading() : 
-            ListView.builder(
-              physics: BouncingScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: NewArtistList.length,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
-                  child: NewArtistCard(
-                    ArtistName: NewArtistList[index]['artist_name'], 
-                    ImageURL: NewArtistList[index]['artist_profileImage']),
+          FutureBuilder(
+            future: ArtistProvider().getNewArtistsAPI(),
+            builder: (context, snapshot) {              
+              if(snapshot.connectionState == ConnectionState.waiting){
+                return Container(height: 200,child: const CircularLoading());
+              }else if(snapshot.hasData){
+                final newAlbumList = snapshot.data;
+                return Container(
+                  height: 200,
+                  child:  
+                  ListView.builder(
+                    physics: BouncingScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: newAlbumList.length,
+                    scrollDirection: Axis.horizontal,
+                    itemBuilder: (context, index) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 0, 8, 0),
+                        child: NewArtistCard(
+                          ArtistName: newAlbumList[index]['artist_name'], 
+                          ImageURL: newAlbumList[index]['artist_profileImage']),
+                      );
+                    },
+                  )
                 );
-              },
-            )
+              }
+              return Container();
+            },
           ),
           const SizedBox(height: 16,),
           

@@ -26,7 +26,7 @@ class _TopNavigationBarState extends State<TopNavigationBar> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-          // Top App bar
+          // ------------------ Top App bar -----------------
           Container(
             color: TabColor,
             padding: EdgeInsets.fromLTRB(42, 8, 42, 8),
@@ -69,7 +69,7 @@ class _TopNavigationBarState extends State<TopNavigationBar> {
           ),
           const SizedBox(height: 16,),
         
-          // Tab Main content
+          // -------------------- Tab Main content -------------------
           Expanded(
             child: ListView(
               children: [
